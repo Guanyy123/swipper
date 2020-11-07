@@ -1,6 +1,7 @@
 import datetime
 
 from django.db import models
+from django.utils.functional import cached_property
 
 class User(models.Model):
     '''
@@ -11,29 +12,32 @@ class User(models.Model):
         ('Female', 'Female'),
     )
 
-    nickname = models.CharField(max_length=32, unique=True)
-    phone = models.CharField(max_length=16, unique=True)
+    nickname = models.CharField(max_length=32, unique=True, null=False)
+    phone = models.CharField(max_length=16, unique=True, null=False)
 
     gender = models.CharField(max_length=8,choices=GENDER)
-    birth_year = models.IntegerField()
-    birth_month = models.IntegerField()
-    birth_day = models.IntegerField()
+    birth_year = models.IntegerField(default=2000)
+    birth_month = models.IntegerField(default=1)
+    birth_day = models.IntegerField(default=1)
     avatar = models.CharField(max_length=256)
     location = models.CharField(max_length=32) # user location
 
-    @property
+    @cached_property
     def age(self):
         today = datetime.date.today()
         birth_date = datetime.date(self.birth_year, self.birth_month, self.birth_day)
         times = today - birth_date
         return times.days // 365
 
-    # @property
-    # def profile(self):
-    #     if not hasattr(self, '_profile'): # check if the profile has init
-    #         _profile, created = Profile.objects.get_or_create(id=self.id)
-    #         self._profile = _profile
-    #     return self._profile
+    @property
+    def profile(self):
+        '''
+        One to One relationship
+        '''
+        if not hasattr(self, '_profile'): # check if the profile has init
+            _profile, created = Profile.objects.get_or_create(id=self.id)
+            self._profile = _profile
+        return self._profile
 
 class Profile(models.Model):
     '''
