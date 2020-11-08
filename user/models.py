@@ -3,7 +3,8 @@ import datetime
 from django.db import models
 from django.utils.functional import cached_property
 
-class User(models.Model):
+from lib.orm import ModelMixin
+class User(models.Model, ModelMixin):
     '''
     User Information Model
     '''
@@ -12,7 +13,7 @@ class User(models.Model):
         ('Female', 'Female'),
     )
 
-    nickname = models.CharField(max_length=32, unique=True, null=False)
+    nickname = models.CharField(max_length=32, unique=True)
     phone = models.CharField(max_length=16, unique=True, null=False)
 
     gender = models.CharField(max_length=8,choices=GENDER)
@@ -39,7 +40,17 @@ class User(models.Model):
             self._profile = _profile
         return self._profile
 
-class Profile(models.Model):
+    def to_dict(self):
+        return {
+            'id': self.id,
+            'nickname': self.nickname,
+            'phone': self.phone,
+            'gender': self.gender,
+            'avatar': self.location,
+            'age': self.age,
+        }
+    
+class Profile(models.Model, ModelMixin):
     '''
     User Setting Profile
     '''
